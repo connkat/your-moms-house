@@ -212,8 +212,13 @@ export default function ItemsPage() {
                 className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-500">
+                  <div className="flex items-baseline gap-2">
+                    <h3 className="text-lg font-medium text-gray-900">{item.name}: </h3>
+                    {item.description && (
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
                     Total committed: {item.total_count}
                   </p>
                 </div>

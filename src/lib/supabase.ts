@@ -22,6 +22,7 @@ export type User = {
 export type Item = {
   id: number
   name: string
+  description?: string
   total_count: number
   created_at: string
 }
