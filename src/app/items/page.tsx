@@ -2,20 +2,64 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Item } from '@/lib/supabase';
 
+type DbProfile = {
+  name: string;
+};
 
+type DbUserItemResponse = {
+  item_id: number;
+  count: number;
+  user_id: string;
+  profile: DbProfile;
+};
+
+type ItemWithCommitments = {
+  id: number;
+  name: string;
+  description?: string;
+  total_count: number;
+  created_at: string;
+  commitments: {
+    count: number;
+    userName: string;
+  }[];
+};
+
+type CategoryWithItems = {
+  id: number;
+  name: string;
+  created_at: string;
+  items: ItemWithCommitments[];
+};
+
+type DbCategory = {
+  id: number;
+  name: string;
+  created_at: string;
+  items: {
+    id: number;
+    name: string;
+    description?: string;
+    total_count: number;
+    created_at: string;
+  }[];
+};
+
+type Commitment = {
+  count: number;
+  userName: string;
+};
 
 export default function ItemsPage() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [userItems, setUserItems] = useState<{ [key: number]: number }>({});
-  const [itemCommitments, setItemCommitments] = useState<{ [key: number]: { name: string; count: number }[] }>({});
-  const [newCounts, setNewCounts] = useState<{ [key: number]: number | undefined }>({});
+  const [categories, setCategories] = useState<CategoryWithItems[]>([]);
   const [expandedItems, setExpandedItems] = useState<{ [key: number]: boolean }>({});
+  const [newCounts, setNewCounts] = useState<{ [key: number]: number }>({});
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState('');
 
-  const loadData = async () => {
+  const fetchItems = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -26,105 +70,87 @@ export default function ItemsPage() {
       console.log('Loading data...');
       
       // First, get items
-      const { data: items, error: itemsError } = await supabase
-        .from('items')
-        .select('*')
-        .order('name');
-      
-      if (itemsError) {
-        console.error('Error fetching items:', itemsError);
-        throw itemsError;
-      }
-      setItems(items || []);
 
-      // Then get user's commitments
-      const { data: userCommitments, error: userCommitmentsError } = await supabase
+      // Fetch user commitments
+      const { data: userItemsData, error: userItemsError } = await supabase
         .from('users_items')
-        .select('*')
+        .select(`
+          item_id,
+          count,
+          user_id,
+          profile:profiles!inner(name)
+        `)
         .eq('user_id', user.id);
-      
-      if (userCommitmentsError) {
-        console.error('Error fetching user commitments:', userCommitmentsError);
-        throw userCommitmentsError;
-      }
-      setUserItems(
-        (userCommitments || []).reduce(
-          (acc, item) => ({ ...acc, [item.item_id]: item.count }),
-          {}
-        )
-      );
 
-      // Get profiles first
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, name');
+      if (userItemsError) throw userItemsError;
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
-      }
+      // Fetch categories with their items
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select(`
+          *,
+          categories_items!inner (item_id),
+          items!categories_items (id, name, description, total_count)
+        `);
 
-      // Create a map of user IDs to names
-      const userNames = new Map(profiles?.map(p => [p.id, p.name]) || []);
+      if (categoriesError) throw categoriesError;
 
-      // Finally get all commitments
-      const { data: allCommitments, error: allCommitmentsError } = await supabase
-        .from('users_items')
-        .select('item_id, count, user_id')
-        .gt('count', 0) // Only get commitments greater than 0
-        .order('item_id');
-      
-      if (allCommitmentsError) {
-        console.error('Error fetching all commitments:', allCommitmentsError);
-        throw allCommitmentsError;
-      }
-      
-      console.log('All commitments:', allCommitments);
+      // Process the data
+      const processedCategories = (categoriesData || []).map((category: DbCategory): CategoryWithItems => {
+        const items = (category.items || []).map((item): ItemWithCommitments => {
+          const validUserItems = ((userItemsData || []) as Record<string, any>[]).filter((ui): ui is DbUserItemResponse => {
+            if (!ui || typeof ui.item_id !== 'number' || typeof ui.count !== 'number') return false;
+            if (!ui.user_id || typeof ui.user_id !== 'string') return false;
+            return ui.profile && typeof ui.profile.name === 'string';
+          });
 
-      // Group commitments by item_id
-      const commitmentsByItem: { [key: number]: { name: string; count: number }[] } = {};
-      for (const item of (allCommitments || [])) {
-        const { item_id, count, user_id } = item;
-        const name = userNames.get(user_id);
-        if (!name) continue;
-        
-        if (!commitmentsByItem[item_id]) {
-          commitmentsByItem[item_id] = [];
-        }
-        commitmentsByItem[item_id].push({ name, count });
-      }
-      
-      console.log('Grouped commitments:', commitmentsByItem);
-      setItemCommitments(commitmentsByItem);
-      setError('');
-    } catch (err) {
-      console.error('Error loading data:', err);
-      setError(err instanceof Error ? err.message : 'Error loading items. Please try refreshing.');
+          const commitments = validUserItems
+            .filter((ui) => ui.item_id === item.id)
+            .map((ui): Commitment => ({
+              count: ui.count,
+              userName: ui.profile.name
+            }));
+
+          return {
+            ...item,
+            commitments,
+            created_at: item.created_at
+          };
+        });
+
+        return {
+          ...category,
+          items
+        } as CategoryWithItems;
+      });
+
+      setCategories(processedCategories);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+      setError('Failed to load items. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    fetchItems();
   }, []);
 
-  const updateCount = async (itemId: number, newCount: number) => {
-    if (newCount < 0) return;
-    
-    setLoading(true);
-    setError('');
-
+  const updateCount = async (itemId: number) => {
+    setIsUpdating(true);
     try {
+      const newCount = newCounts[itemId];
+      if (typeof newCount !== 'number') return;
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setError('Not authenticated');
         return;
       }
 
-      const currentCount = userItems[itemId] || 0;
+      const currentCount = 0; // We'll get this from the server
 
-      // Update user's commitment
       const { error: upsertError } = await supabase
         .from('users_items')
         .upsert({
@@ -147,24 +173,21 @@ export default function ItemsPage() {
         p_count: newCount - currentCount
       });
 
-      // Refresh data to get the updated total
-      await loadData();
-
       if (updateError) {
         console.error('Error updating total count:', updateError);
         throw new Error('Failed to update total count');
       }
 
       // Reset the new count input
-      setNewCounts(prev => ({
-        ...prev,
-        [itemId]: undefined
-      }));
+      const { [itemId]: removed, ...rest } = newCounts;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _ = removed; // Acknowledge the unused variable
+      setNewCounts(rest);
     } catch (err) {
       console.error('Error updating item:', err);
       setError(err instanceof Error ? err.message : 'Error updating item. Please try again.');
     } finally {
-      setLoading(false);
+      setIsUpdating(false);
     }
   };
 
@@ -198,81 +221,89 @@ export default function ItemsPage() {
           </div>
         )}
 
-        {loading && (
-          <div className="mt-4 flex justify-center">
-            <div className="loader">Loading...</div>
-          </div>
-        )}
-
-        <div className="space-y-2 mt-6">
-          {items.map(item => (
-            <div key={item.id} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-              <button
-                onClick={() => setExpandedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <h3 className="text-lg font-medium text-gray-900">{item.name}: </h3>
-                    {item.description && (
-                      <p className="text-sm text-gray-600">{item.description}</p>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Total committed: {item.total_count}
-                  </p>
-                </div>
-                <svg
-                  className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${expandedItems[item.id] ? 'rotate-180' : ''}`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              {expandedItems[item.id] && (
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Your commitment: {userItems[item.id] || 0}
-                  </p>
-                  <div className="text-sm text-gray-500 mb-4">
-                    {itemCommitments[item.id]?.map(({ name, count }) => (
-                      <span key={name} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2 mb-2">
-                        {name} ({count})
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder={String(userItems[item.id] || 0)}
-                      value={newCounts[item.id] === undefined ? '' : newCounts[item.id]}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? undefined : parseInt(e.target.value);
-                        setNewCounts(prev => ({
-                          ...prev,
-                          [item.id]: value
-                        }));
-                      }}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                    />
-                    <button
-                      onClick={() => {
-                        const newCount = newCounts[item.id];
-                        if (newCount !== undefined) {
-                          updateCount(item.id, newCount);
-                        }
-                      }}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                      disabled={newCounts[item.id] === undefined || newCounts[item.id] === userItems[item.id]}
+        <div className="space-y-6 mt-6">
+          {categories.map(category => (
+            <div key={category.id} className="space-y-2">
+              <h2 className="text-xl font-semibold text-gray-900">{category.name}</h2>
+              {category.items?.map(item => (
+                <div key={item.id} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                  <button
+                    onClick={() => setExpandedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                    className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <h3 className="text-lg font-medium text-gray-900">{item.name}: </h3>
+                        {item.description && (
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Total committed: {item.total_count}
+                      </p>
+                    </div>
+                    <svg
+                      className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${expandedItems[item.id] ? 'rotate-180' : ''}`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
-                      Update
-                    </button>
-                  </div>
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+
+                  {expandedItems[item.id] && (
+                    <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor={`count-${item.id}`} className="block text-sm font-medium text-gray-700">
+                            Your commitment
+                          </label>
+                          <div className="mt-1 flex rounded-md shadow-sm">
+                            <input
+                              type="number"
+                              name={`count-${item.id}`}
+                              id={`count-${item.id}`}
+                              min="0"
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              value={newCounts[item.id] ?? 0}
+                              onChange={(e) => {
+                                const value = Math.max(0, parseInt(e.target.value) || 0);
+                                setNewCounts((prev: { [key: number]: number }) => ({ ...prev, [item.id]: value }));
+                              }}
+                            />
+                            <button
+                              onClick={() => updateCount(item.id)}
+                              disabled={isUpdating}
+                              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Update
+                            </button>
+                          </div>
+                        </div>
+
+                        {item.commitments && item.commitments.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Current commitments</h4>
+                            <ul className="mt-2 divide-y divide-gray-200">
+                              {item.commitments.map((commitment: Commitment, idx: number) => (
+                                <li key={idx} className="py-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <span className="text-sm text-gray-900">{commitment.userName}</span>
+                                    </div>
+                                    <span className="text-sm text-gray-500">{commitment.count}</span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
           ))}
         </div>

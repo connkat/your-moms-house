@@ -19,12 +19,20 @@ export type User = {
   profile?: Profile
 }
 
+export type Category = {
+  id: number
+  name: string
+  created_at: string
+  items?: Item[]
+}
+
 export type Item = {
   id: number
   name: string
   description?: string
   total_count: number
   created_at: string
+  categories?: Category[]
 }
 
 export type UserItem = {
