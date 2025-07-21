@@ -72,24 +72,35 @@ CREATE TABLE IF NOT EXISTS users_items (
 -- Enable RLS for users_items table
 ALTER TABLE users_items ENABLE ROW LEVEL SECURITY;
 
--- Create stored procedure for incrementing item counts
-CREATE OR REPLACE FUNCTION increment_item_count(p_item_id bigint, p_count int)
+-- Create stored procedure for updating total counts
+CREATE OR REPLACE FUNCTION update_total_count(p_item_id bigint, p_count int)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  v_current_total int;
 BEGIN
+  -- Get current total
+  SELECT total_count INTO v_current_total
+  FROM items
+  WHERE id = p_item_id;
+
+  -- Update the total
   UPDATE items
-  SET total_count = total_count + p_count
+  SET total_count = v_current_total + p_count
   WHERE id = p_item_id;
 END;
 $$;
 
--- Drop existing policies if they exist
+-- Drop ALL existing policies
 DROP POLICY IF EXISTS "Enable read access for all users" ON items;
 DROP POLICY IF EXISTS "Enable read access for own items" ON users_items;
 DROP POLICY IF EXISTS "Enable insert access for own items" ON users_items;
 DROP POLICY IF EXISTS "Enable update access for own items" ON users_items;
+DROP POLICY IF EXISTS "Users can read their own items" ON users_items;
+DROP POLICY IF EXISTS "Users can insert their own items" ON users_items;
+DROP POLICY IF EXISTS "Users can update their own items" ON users_items;
 
 -- Create RLS policies
 -- Items table policies
@@ -99,17 +110,17 @@ CREATE POLICY "Enable read access for all users"
   USING (true);
 
 -- Users_items table policies
-CREATE POLICY "Enable read access for own items"
+CREATE POLICY "Users can read their own items"
   ON users_items FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Enable insert access for own items"
+CREATE POLICY "Users can insert their own items"
   ON users_items FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Enable update access for own items"
+CREATE POLICY "Users can update their own items"
   ON users_items FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id)
