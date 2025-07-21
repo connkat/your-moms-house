@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ProfileForm from '@/components/ProfileForm';
+import ClientOnly from '@/components/ClientOnly';
 import type { Profile } from '@/lib/supabase';
 
 export default function ItemsLayout({
@@ -25,11 +26,34 @@ export default function ItemsLayout({
         }
 
         // Check if user has a profile
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          // PGRST116 means no data found, which is expected for new users
+          console.error('Error fetching profile:', profileError);
+          throw profileError;
+        }
+
+        if (!profileData) {
+          // Create profile for new user
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              name: null, // We'll update this when they enter their name
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+            throw insertError;
+          }
+        }
 
         setProfile(profileData);
       } catch (error) {
@@ -63,7 +87,11 @@ export default function ItemsLayout({
   }
 
   if (!profile?.name) {
-    return <ProfileForm onComplete={() => window.location.reload()} />;
+    return (
+      <ClientOnly>
+        <ProfileForm onComplete={() => window.location.reload()} />
+      </ClientOnly>
+    );
   }
 
   return <>{children}</>;

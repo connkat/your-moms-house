@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/lib/supabase';
+import ClientOnly from '@/components/ClientOnly';
 
 export default function Home() {
 
@@ -65,13 +65,26 @@ export default function Home() {
           </>
         ) : (
           <div className="auth-container">
-            <Auth
-              supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
-              providers={[]}
-              view="magic_link"
-              redirectTo={`${window.location.origin}/items`}
-            />
+            <ClientOnly>
+              <Auth
+                supabaseClient={supabase}
+                appearance={{
+                  theme: ThemeSupa,
+                  variables: {
+                    default: {
+                      colors: {
+                        brand: '#4F46E5',
+                        brandAccent: '#4338CA'
+                      }
+                    }
+                  }
+                }}
+                providers={[]}
+                view="magic_link"
+                showLinks={false}
+                redirectTo={`${window.location.origin}/items`}
+              />
+            </ClientOnly>
           </div>
         )}
       </div>

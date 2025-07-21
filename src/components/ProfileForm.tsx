@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 
 export default function ProfileForm({ onComplete }: { onComplete: () => void }) {
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,6 +16,14 @@ export default function ProfileForm({ onComplete }: { onComplete: () => void }) 
     setError('');
 
     try {
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
       console.log('Getting user...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       console.log('Auth response:', { user, error: userError });
@@ -28,22 +38,31 @@ export default function ProfileForm({ onComplete }: { onComplete: () => void }) 
         throw new Error('No user found');
       }
 
-      console.log('Inserting profile for user:', user.id);
-      const { data, error: insertError } = await supabase
+      // Update password
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (passwordError) {
+        console.error('Password update error:', passwordError);
+        throw passwordError;
+      }
+
+      console.log('Updating profile for user:', user.id);
+      const { data, error: updateError } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
+        .update({
           name: name.trim(),
-          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
+        .eq('id', user.id)
         .select();
 
-      console.log('Insert response:', { data, error: insertError });
+      console.log('Update response:', { data, error: updateError });
 
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        throw new Error(`Insert failed: ${insertError.message}`);
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw new Error(`Update failed: ${updateError.message}`);
       }
 
       console.log('Profile updated successfully');
@@ -82,8 +101,26 @@ export default function ProfileForm({ onComplete }: { onComplete: () => void }) 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm mb-4"
               placeholder="Enter your name"
+            />
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm mb-4"
+              placeholder="Choose a password"
+            />
+            <input
+              id="confirm-password"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Confirm password"
             />
           </div>
           {error && (
