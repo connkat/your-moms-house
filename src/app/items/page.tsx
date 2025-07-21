@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Item } from '@/lib/supabase';
 
+
+
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [userItems, setUserItems] = useState<{ [key: number]: number }>({});
+  const [itemCommitments, setItemCommitments] = useState<{ [key: number]: { name: string; count: number }[] }>({});
   const [newCounts, setNewCounts] = useState<{ [key: number]: number | undefined }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,25 +22,83 @@ export default function ItemsPage() {
         return;
       }
 
-      const [itemsResponse, userItemsResponse] = await Promise.all([
-        supabase.from('items').select('*').order('name'),
-        supabase.from('users_items').select('*').eq('user_id', user.id)
-      ]);
+      console.log('Loading data...');
+      
+      // First, get items
+      const { data: items, error: itemsError } = await supabase
+        .from('items')
+        .select('*')
+        .order('name');
+      
+      if (itemsError) {
+        console.error('Error fetching items:', itemsError);
+        throw itemsError;
+      }
+      setItems(items || []);
 
-      if (itemsResponse.error) throw itemsResponse.error;
-      if (userItemsResponse.error) throw userItemsResponse.error;
-
-      setItems(itemsResponse.data || []);
+      // Then get user's commitments
+      const { data: userCommitments, error: userCommitmentsError } = await supabase
+        .from('users_items')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (userCommitmentsError) {
+        console.error('Error fetching user commitments:', userCommitmentsError);
+        throw userCommitmentsError;
+      }
       setUserItems(
-        (userItemsResponse.data || []).reduce(
+        (userCommitments || []).reduce(
           (acc, item) => ({ ...acc, [item.item_id]: item.count }),
           {}
         )
       );
+
+      // Get profiles first
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name');
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      // Create a map of user IDs to names
+      const userNames = new Map(profiles?.map(p => [p.id, p.name]) || []);
+
+      // Finally get all commitments
+      const { data: allCommitments, error: allCommitmentsError } = await supabase
+        .from('users_items')
+        .select('item_id, count, user_id')
+        .gt('count', 0) // Only get commitments greater than 0
+        .order('item_id');
+      
+      if (allCommitmentsError) {
+        console.error('Error fetching all commitments:', allCommitmentsError);
+        throw allCommitmentsError;
+      }
+      
+      console.log('All commitments:', allCommitments);
+
+      // Group commitments by item_id
+      const commitmentsByItem: { [key: number]: { name: string; count: number }[] } = {};
+      for (const item of (allCommitments || [])) {
+        const { item_id, count, user_id } = item;
+        const name = userNames.get(user_id);
+        if (!name) continue;
+        
+        if (!commitmentsByItem[item_id]) {
+          commitmentsByItem[item_id] = [];
+        }
+        commitmentsByItem[item_id].push({ name, count });
+      }
+      
+      console.log('Grouped commitments:', commitmentsByItem);
+      setItemCommitments(commitmentsByItem);
       setError('');
     } catch (err) {
       console.error('Error loading data:', err);
-      setError('Error loading items. Please try refreshing.');
+      setError(err instanceof Error ? err.message : 'Error loading items. Please try refreshing.');
     } finally {
       setLoading(false);
     }
@@ -142,6 +203,13 @@ export default function ItemsPage() {
                     <p className="text-sm text-gray-500">
                       Your commitment: {userItems[item.id] || 0}
                     </p>
+                    <div className="text-sm text-gray-500 mt-1">
+                      {itemCommitments[item.id]?.map(({ name, count }) => (
+                        <span key={name} className="mr-3">
+                          {name}({count})
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
@@ -157,12 +225,17 @@ export default function ItemsPage() {
                             [item.id]: value
                           }));
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                       />
                       <button
-                        onClick={() => updateCount(item.id, newCounts[item.id] ?? userItems[item.id] ?? 0)}
+                        onClick={() => {
+                          const newCount = newCounts[item.id];
+                          if (newCount !== undefined) {
+                            updateCount(item.id, newCount);
+                          }
+                        }}
                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        disabled={newCounts[item.id] === undefined}
+                        disabled={newCounts[item.id] === undefined || newCounts[item.id] === userItems[item.id]}
                       >
                         Update
                       </button>
