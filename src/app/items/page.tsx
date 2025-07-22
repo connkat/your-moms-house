@@ -105,8 +105,8 @@ export default function ItemsPage() {
         (category: DbCategory): CategoryWithItems => {
           const items = (category.items || []).map(
             (item): ItemWithCommitments => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const validUserItems = (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (userItemsData || []) as Record<string, any>[]
               ).filter((ui): ui is DbUserItemResponse => {
                 if (
@@ -200,11 +200,14 @@ export default function ItemsPage() {
         throw new Error("Failed to update total count");
       }
 
-      // Reset the new count input
+      // Reset the new count input and refresh data
       const { [itemId]: removed, ...rest } = newCounts;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = removed; // Acknowledge the unused variable
+      const _ = removed; 
       setNewCounts(rest);
+
+      // Refresh to get updated totals
+      await fetchItems();
     } catch (err) {
       console.error("Error updating item:", err);
       setError(
@@ -316,13 +319,13 @@ export default function ItemsPage() {
                           >
                             Your commitment: {item.commitments.find(c => c.count > 0)?.count || 0}
                           </label>
-                          <div className="mt-1 flex rounded-md shadow-sm text-black">
+                          <div className="mt-1 flex max-w-32 rounded-md shadow-sm text-black">
                             <input
                               type="number"
                               name={`count-${item.id}`}
                               id={`count-${item.id}`}
                               min="0"
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
                               value={newCounts[item.id] ?? 0}
                               onChange={(e) => {
                                 const value = Math.max(
