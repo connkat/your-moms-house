@@ -78,9 +78,8 @@ export default function BonusItemForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 bg-white p-6 rounded-lg shadow-sm"
+      className="space-y-4"
     >
-      <h3 className="text-lg font-medium text-gray-900">Add a New Item</h3>
 
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">

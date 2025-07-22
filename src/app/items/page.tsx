@@ -10,6 +10,7 @@ import {
   DbCategory,
 } from "../types";
 import BonusItemForm from "../../components/BonusItemForm";
+import Modal from "../../components/Modal";
 
 export default function ItemsPage() {
   const [categories, setCategories] = useState<CategoryWithItems[]>([]);
@@ -22,6 +23,7 @@ export default function ItemsPage() {
     [key: number]: boolean;
   }>({});
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchItems = async () => {
     try {
@@ -224,26 +226,49 @@ export default function ItemsPage() {
           </div>
         )}
 
-        <div className="border border-gray-200  p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
-          <p>
-            We&apos;re testing this out to see if it can simplify the process of
-            buying items for Your Mom&apos;s House bar at What If this year.
-          </p>
-          <p>
-            To use, just add what you are brining to help stock the bar at YMH.
-          </p>
-          <p>
-            If you&apos;re bringing something that isn&apos;t already on the
-            list <b>for the bar</b>, use the form at the bottom of the page to
-            add it.
-          </p>
-          <p>
-            <b>
-              Please note that this is just for the bar, we&apos;re not
-              currently setup to use this for other shared items.
-            </b>
-          </p>
+        <div className="border border-gray-200 p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
+          <div className="flex justify-between items-center">
+            <div className="space-y-2 flex-1">
+              <p>
+                We&apos;re testing this out to see if it can simplify the process of
+                buying items for Your Mom&apos;s House bar at What If this year.
+              </p>
+              <p>
+                To use, just add what you are brining to help stock the bar at YMH.
+              </p>
+              <p>
+                If you&apos;re bringing something that isn&apos;t already on the
+                list <b>for the bar</b>, click the button to the right to add it.
+              </p>
+              <p>
+                <b>
+                  Please note that this is just for the bar, we&apos;re not
+                  currently setup to use this for other shared items.
+                </b>
+              </p>
+            </div>
+            <div className="ml-8 flex-shrink-0">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Add New Item
+              </button>
+            </div>
+          </div>
         </div>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Add a New Item"
+        >
+          <BonusItemForm
+            onItemAdded={() => {
+              fetchItems();
+              setIsModalOpen(false);
+            }}
+          />
+        </Modal>
         <div className="space-y-6 mt-6">
           {categories.map((category) => (
             <div key={category.id} className="space-y-2">
@@ -371,10 +396,6 @@ export default function ItemsPage() {
               ))}
             </div>
           ))}
-        </div>
-
-        <div className="mt-12">
-          <BonusItemForm onItemAdded={fetchItems} />
         </div>
       </div>
     </div>
