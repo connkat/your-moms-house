@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import Image from "next/image";
-import YMHLogo from "../assets/YMH.jpg";
 
 type DbProfile = {
   name: string;
@@ -21,6 +19,7 @@ type ItemWithCommitments = {
   name: string;
   description?: string;
   total_count: number;
+  max_count: number;
   created_at: string;
   commitments: {
     count: number;
@@ -43,6 +42,7 @@ type DbCategory = {
     id: number;
     name: string;
     description?: string;
+    max_count: number;
     total_count: number;
     created_at: string;
   }[];
@@ -97,7 +97,7 @@ export default function ItemsPage() {
         await supabase.from("categories").select(`
           *,
           categories_items!inner (item_id),
-          items!categories_items (id, name, description, total_count)
+          items!categories_items (id, name, description, max_count, total_count)
         `);
 
       if (categoriesError) throw categoriesError;
@@ -136,6 +136,10 @@ export default function ItemsPage() {
                 ...item,
                 commitments,
                 created_at: item.created_at,
+                id: item.id,
+                name: item.name,
+                total_count: item.total_count,
+                max_count: item.max_count,
               };
             }
           );
@@ -166,15 +170,22 @@ export default function ItemsPage() {
       const newCount = newCounts[itemId];
       if (typeof newCount !== "number") return;
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setError("Not authenticated");
         return;
       }
 
-      const currentCount = 0; // We'll get this from the server
+      // Get the user's current commitment for this item
+      const { data: currentCommitment } = await supabase
+        .from("users_items")
+        .select("count")
+        .eq("user_id", user.id)
+        .eq("item_id", itemId)
+        .single();
+
+      const currentCount = currentCommitment?.count || 0;
+      const countDifference = newCount - currentCount;
 
       const { error: upsertError } = await supabase.from("users_items").upsert(
         {
@@ -193,10 +204,10 @@ export default function ItemsPage() {
         throw new Error("Failed to update your commitment");
       }
 
-      // Update total count
+      // Update total count with the difference
       const { error: updateError } = await supabase.rpc("update_total_count", {
         p_item_id: itemId,
-        p_count: newCount - currentCount,
+        p_count: countDifference,
       });
 
       if (updateError) {
@@ -227,16 +238,6 @@ export default function ItemsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="mb-8">
-          <Image
-            src={YMHLogo}
-            alt="YMH Logo"
-            width={200}
-            height={100}
-            priority
-            className="rounded-lg"
-          />
-        </div>
         <p className="text-lg">Loading...</p>
       </div>
     );
@@ -283,6 +284,12 @@ export default function ItemsPage() {
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
                         Total committed: {item.total_count}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Total needed: {item.max_count}
+                      </p>
+                      <p className="text-sm text-red-500 mt-1">
+                        Remaining needed: {item.max_count - item.total_count}
                       </p>
                     </div>
                     <svg
