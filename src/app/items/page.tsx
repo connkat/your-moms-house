@@ -33,8 +33,6 @@ export default function ItemsPage() {
         return;
       }
 
-      console.log("Loading data...");
-
       // First, get items
 
       // Fetch user commitments
@@ -252,128 +250,121 @@ export default function ItemsPage() {
               <h2 className="text-xl font-semibold text-gray-900">
                 {category.name}
               </h2>
-              {category.items?.map((item) => (
+              {category.items.map((item) => (
                 <div
                   key={item.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm"
+                  className="bg-white shadow-sm rounded-lg overflow-hidden"
                 >
-                  <button
-                    onClick={() =>
-                      setExpandedItems((prev) => ({
-                        ...prev,
-                        [item.id]: !prev[item.id],
-                      }))
-                    }
-                    className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <div>
-                      <div className="flex items-baseline gap-2">
+                  {category.id === 3 ? (
+                    // Simple display for category 3 items
+                    <div className="p-4">
+                      <div>
                         <h3 className="text-lg font-medium text-gray-900">
-                          {item.name}:{" "}
+                          {item.name}
                         </h3>
                         {item.description && (
-                          <p className="text-sm text-gray-600">
+                          <p className="ml-1 text-sm text-gray-500">
                             {item.description}
                           </p>
                         )}
                       </div>
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-sm text-gray-500 mt-1">
-                          Total committed: {item.total_count}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Total needed: {item.max_count}
-                        </p>
-                        <p className="text-sm text-red-500 mt-1">
-                          Remaining needed: {item.max_count - item.total_count}
-                        </p>
-                      </div>
                     </div>
-                    <svg
-                      className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${
-                        expandedItems[item.id] ? "rotate-180" : ""
-                      }`}
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-
-                  {expandedItems[item.id] && (
-                    <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                      <div className="space-y-4">
-                        <div>
-                          <label
-                            htmlFor={`count-${item.id}`}
-                            className="block text-sm font-medium text-black"
-                          >
-                            Your commitment:{" "}
-                            {item.commitments.find((c) => c.count > 0)?.count ||
-                              0}
-                          </label>
-                          <div className="mt-1 flex max-w-32 rounded-md shadow-sm text-black">
-                            <input
-                              type="number"
-                              name={`count-${item.id}`}
-                              id={`count-${item.id}`}
-                              min="0"
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
-                              value={newCounts[item.id] ?? 0}
-                              onChange={(e) => {
-                                const value = Math.max(
-                                  0,
-                                  parseInt(e.target.value) || 0
-                                );
-                                setNewCounts(
-                                  (prev: { [key: number]: number }) => ({
-                                    ...prev,
-                                    [item.id]: value,
-                                  })
-                                );
-                              }}
-                            />
-                            <button
-                              onClick={() => updateCount(item.id)}
-                              disabled={updatingItems[item.id]}
-                              className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {updatingItems[item.id]
-                                ? "Updating..."
-                                : "Update"}
-                            </button>
+                  ) : (
+                    // Regular accordion display for other categories
+                    <div>
+                      <button
+                        onClick={() =>
+                          setExpandedItems((prev) => ({
+                            ...prev,
+                            [item.id]: !prev[item.id],
+                          }))
+                        }
+                        className="w-full px-4 py-5 flex items-start justify-between focus:outline-none"
+                      >
+                        <div className="flex flex-col items-start">
+                          <div className="flex flex-row items-center">
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {item.name}:
+                            </h3>
+                            {item.description && (
+                              <p className="ml-1 text-sm text-gray-500">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-baseline gap-4">
+                            <p className="text-sm text-gray-500">
+                              Total committed: {item.total_count}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Total needed: {item.max_count}
+                            </p>
+                            <p className="text-sm text-red-500">
+                              Remaining needed:{" "}
+                              {item.max_count - item.total_count}
+                            </p>
                           </div>
                         </div>
-
-                        {/* {item.commitments && item.commitments.length > 0 && (
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900">
-                              Current commitments:
-                            </h4>
-                            <ul className="mt-2 divide-y divide-gray-200">
-                              {item.commitments.map(
-                                (commitment: Commitment, idx: number) => (
-                                  <li key={idx} className="py-2">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center">
-                                        <span className="text-sm text-gray-900">
-                                          {commitment.userName} (
-                                          {commitment.count})
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </li>
-                                )
-                              )}
-                            </ul>
+                        <svg
+                          className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${
+                            expandedItems[item.id] ? "rotate-180" : ""
+                          }`}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      {expandedItems[item.id] && (
+                        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                          <div className="space-y-4">
+                            <div>
+                              <label
+                                htmlFor={`count-${item.id}`}
+                                className="block text-sm font-medium text-black"
+                              >
+                                Your commitment:{" "}
+                                {item.commitments.find((c) => c.count > 0)
+                                  ?.count || 0}
+                              </label>
+                              <div className="mt-1 flex max-w-32 rounded-md shadow-sm text-black">
+                                <input
+                                  type="number"
+                                  name={`count-${item.id}`}
+                                  id={`count-${item.id}`}
+                                  min="0"
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
+                                  value={newCounts[item.id] ?? 0}
+                                  onChange={(e) => {
+                                    const value = Math.max(
+                                      0,
+                                      parseInt(e.target.value) || 0
+                                    );
+                                    setNewCounts((prev) => ({
+                                      ...prev,
+                                      [item.id]: value,
+                                    }));
+                                  }}
+                                />
+                                <button
+                                  onClick={() => updateCount(item.id)}
+                                  disabled={updatingItems[item.id]}
+                                  className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {updatingItems[item.id]
+                                    ? "Updating..."
+                                    : "Update"}
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        )} */}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
