@@ -285,8 +285,8 @@ export default function ItemsPage() {
               </p>
               <p className="text-sm sm:text-base">
                 If you&apos;re bringing something that isn&apos;t already on the
-                list <b>for the bar</b>, click the button {window.innerWidth >= 640 ? 'to the right' : 'below'} to add
-                it.
+                list <b>for the bar</b>, click the button{" "}
+                {window.innerWidth >= 640 ? "to the right" : "below"} to add it.
               </p>
               <p className="text-sm sm:text-base">
                 <b>
@@ -397,9 +397,16 @@ export default function ItemsPage() {
                             <p className="text-sm text-gray-500">
                               Total needed: {item.max_count}
                             </p>
-                            <p className="text-sm text-red-500">
-                              Remaining needed:{" "}
-                              {item.max_count - item.total_count}
+                            <p
+                              className={`text-sm ${
+                                item.max_count - item.total_count > 10
+                                  ? "text-red-500"
+                                  : item.max_count - item.total_count > 1
+                                  ? "text-orange-400"
+                                  : "text-green-500"
+                              }`}
+                            >
+                              Needed: {item.max_count - item.total_count}
                             </p>
                           </div>
                         </div>
