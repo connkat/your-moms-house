@@ -105,19 +105,21 @@ export default function ItemsPage() {
         (category: DbCategory): CategoryWithItems => {
           const items = (category.items || []).map(
             (item): ItemWithCommitments => {
-              const validUserItems = (
+              const validUserItems =
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (userItemsData || []) as Record<string, any>[]
-              ).filter((ui): ui is DbUserItemResponse => {
-                if (
-                  !ui ||
-                  typeof ui.item_id !== "number" ||
-                  typeof ui.count !== "number"
-                )
-                  return false;
-                if (!ui.user_id || typeof ui.user_id !== "string") return false;
-                return ui.profile && typeof ui.profile.name === "string";
-              });
+                ((userItemsData || []) as Record<string, any>[]).filter(
+                  (ui): ui is DbUserItemResponse => {
+                    if (
+                      !ui ||
+                      typeof ui.item_id !== "number" ||
+                      typeof ui.count !== "number"
+                    )
+                      return false;
+                    if (!ui.user_id || typeof ui.user_id !== "string")
+                      return false;
+                    return ui.profile && typeof ui.profile.name === "string";
+                  }
+                );
 
               const commitments = validUserItems
                 .filter((ui) => ui.item_id === item.id)
@@ -203,7 +205,7 @@ export default function ItemsPage() {
       // Reset the new count input and refresh data
       const { [itemId]: removed, ...rest } = newCounts;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = removed; 
+      const _ = removed;
       setNewCounts(rest);
 
       // Refresh to get updated totals
@@ -317,7 +319,9 @@ export default function ItemsPage() {
                             htmlFor={`count-${item.id}`}
                             className="block text-sm font-medium text-black"
                           >
-                            Your commitment: {item.commitments.find(c => c.count > 0)?.count || 0}
+                            Your commitment:{" "}
+                            {item.commitments.find((c) => c.count > 0)?.count ||
+                              0}
                           </label>
                           <div className="mt-1 flex max-w-32 rounded-md shadow-sm text-black">
                             <input
@@ -353,7 +357,7 @@ export default function ItemsPage() {
                         {item.commitments && item.commitments.length > 0 && (
                           <div>
                             <h4 className="text-sm font-medium text-gray-900">
-                              Current commitments
+                              Current commitments:
                             </h4>
                             <ul className="mt-2 divide-y divide-gray-200">
                               {item.commitments.map(
@@ -362,12 +366,10 @@ export default function ItemsPage() {
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center">
                                         <span className="text-sm text-gray-900">
-                                          {commitment.userName}
+                                          {commitment.userName} (
+                                          {commitment.count})
                                         </span>
                                       </div>
-                                      <span className="text-sm text-gray-500">
-                                        {commitment.count}
-                                      </span>
                                     </div>
                                   </li>
                                 )
