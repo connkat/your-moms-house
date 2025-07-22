@@ -2,56 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
-type DbProfile = {
-  name: string;
-};
-
-type DbUserItemResponse = {
-  item_id: number;
-  count: number;
-  user_id: string;
-  profile: DbProfile;
-};
-
-type ItemWithCommitments = {
-  id: number;
-  name: string;
-  description?: string;
-  total_count: number;
-  max_count: number;
-  created_at: string;
-  commitments: {
-    count: number;
-    userName: string;
-  }[];
-};
-
-type CategoryWithItems = {
-  id: number;
-  name: string;
-  created_at: string;
-  items: ItemWithCommitments[];
-};
-
-type DbCategory = {
-  id: number;
-  name: string;
-  created_at: string;
-  items: {
-    id: number;
-    name: string;
-    description?: string;
-    max_count: number;
-    total_count: number;
-    created_at: string;
-  }[];
-};
-
-type Commitment = {
-  count: number;
-  userName: string;
-};
+import {
+  CategoryWithItems,
+  ItemWithCommitments,
+  Commitment,
+  DbUserItemResponse,
+  DbCategory,
+} from "../types";
 
 export default function ItemsPage() {
   const [categories, setCategories] = useState<CategoryWithItems[]>([]);
@@ -60,7 +17,9 @@ export default function ItemsPage() {
   }>({});
   const [newCounts, setNewCounts] = useState<{ [key: number]: number }>({});
   const [loading, setLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [updatingItems, setUpdatingItems] = useState<{
+    [key: number]: boolean;
+  }>({});
   const [error, setError] = useState("");
 
   const fetchItems = async () => {
@@ -152,6 +111,18 @@ export default function ItemsPage() {
       );
 
       setCategories(processedCategories);
+
+      // Initialize newCounts with current commitment values
+      const initialCounts: { [key: number]: number } = {};
+      processedCategories.forEach((category) => {
+        category.items.forEach((item) => {
+          const currentCommitment = item.commitments.find((c) => c.count > 0);
+          if (currentCommitment) {
+            initialCounts[item.id] = currentCommitment.count;
+          }
+        });
+      });
+      setNewCounts(initialCounts);
     } catch (error) {
       console.error("Error fetching items:", error);
       setError("Failed to load items. Please try again.");
@@ -165,12 +136,14 @@ export default function ItemsPage() {
   }, []);
 
   const updateCount = async (itemId: number) => {
-    setIsUpdating(true);
+    setUpdatingItems((prev) => ({ ...prev, [itemId]: true }));
     try {
       const newCount = newCounts[itemId];
       if (typeof newCount !== "number") return;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setError("Not authenticated");
         return;
@@ -231,7 +204,7 @@ export default function ItemsPage() {
           : "Error updating item. Please try again."
       );
     } finally {
-      setIsUpdating(false);
+      setUpdatingItems((prev) => ({ ...prev, [itemId]: false }));
     }
   };
 
@@ -282,15 +255,17 @@ export default function ItemsPage() {
                           </p>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Total committed: {item.total_count}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Total needed: {item.max_count}
-                      </p>
-                      <p className="text-sm text-red-500 mt-1">
-                        Remaining needed: {item.max_count - item.total_count}
-                      </p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-sm text-gray-500 mt-1">
+                          Total committed: {item.total_count}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Total needed: {item.max_count}
+                        </p>
+                        <p className="text-sm text-red-500 mt-1">
+                          Remaining needed: {item.max_count - item.total_count}
+                        </p>
+                      </div>
                     </div>
                     <svg
                       className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${
@@ -343,10 +318,12 @@ export default function ItemsPage() {
                             />
                             <button
                               onClick={() => updateCount(item.id)}
-                              disabled={isUpdating}
+                              disabled={updatingItems[item.id]}
                               className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              Update
+                              {updatingItems[item.id]
+                                ? "Updating..."
+                                : "Update"}
                             </button>
                           </div>
                         </div>
