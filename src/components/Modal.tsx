@@ -26,10 +26,10 @@ export default function Modal({
       className="fixed inset-0 z-50 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="flex min-h-screen items-center justify-center p-4 text-center">
+      <div className="flex min-h-screen items-end sm:items-center justify-center p-0 sm:p-4 text-center">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
 
-        <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+        <div className="relative w-full transform overflow-hidden rounded-t-lg sm:rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
           <div className="absolute top-0 right-0 pt-4 pr-4">
             <button
               type="button"

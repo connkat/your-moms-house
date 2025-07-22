@@ -264,7 +264,7 @@ export default function ItemsPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
         {error && (
           <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
             <p className="text-sm text-red-700">{error}</p>
@@ -272,33 +272,33 @@ export default function ItemsPage() {
         )}
 
         <div className="border border-gray-200 p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div className="space-y-2 flex-1">
-              <p>
+              <p className="text-sm sm:text-base">
                 We&apos;re testing this out to see if it can simplify the
                 process of buying items for Your Mom&apos;s House bar at What If
                 this year.
               </p>
-              <p>
+              <p className="text-sm sm:text-base">
                 To use, just add to the count of what you are bringing to help
                 stock the bar at YMH.
               </p>
-              <p>
+              <p className="text-sm sm:text-base">
                 If you&apos;re bringing something that isn&apos;t already on the
-                list <b>for the bar</b>, click the button to the right to add
+                list <b>for the bar</b>, click the button {window.innerWidth >= 640 ? 'to the right' : 'below'} to add
                 it.
               </p>
-              <p>
+              <p className="text-sm sm:text-base">
                 <b>
                   Please note that this is just for the bar, we&apos;re not
                   currently setup to use this for other shared items.
                 </b>
               </p>
             </div>
-            <div className="ml-8 flex-shrink-0">
+            <div className="flex-shrink-0 w-full sm:w-auto sm:ml-8">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 Add New Item
               </button>
@@ -330,14 +330,14 @@ export default function ItemsPage() {
                 >
                   {category.id === 3 ? (
                     // Simple display for category 3 items
-                    <div className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900">
+                    <div className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900">
                             {item.name}
                           </h3>
                           {item.description && (
-                            <p className="ml-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-gray-500">
                               {item.description}
                             </p>
                           )}
@@ -377,15 +377,15 @@ export default function ItemsPage() {
                             [item.id]: !prev[item.id],
                           }))
                         }
-                        className="w-full px-4 py-5 flex items-start justify-between focus:outline-none"
+                        className="w-full px-3 py-4 sm:px-4 sm:py-5 flex items-start justify-between focus:outline-none"
                       >
-                        <div className="flex flex-col items-start">
-                          <div className="flex flex-row items-center">
-                            <h3 className="text-lg font-medium text-gray-900">
+                        <div className="flex flex-col items-start w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center w-full">
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
                               {item.name}:
                             </h3>
                             {item.description && (
-                              <p className="ml-1 text-sm text-gray-500">
+                              <p className="mt-1 sm:mt-0 sm:ml-2 text-sm text-gray-500">
                                 {item.description}
                               </p>
                             )}
