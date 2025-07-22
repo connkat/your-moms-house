@@ -224,6 +224,27 @@ export default function ItemsPage() {
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
+
+        <div className="border border-gray-200  p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
+          <p>
+            We&apos;re testing this out to see if it can simplify the process of
+            buying items for Your Mom&apos;s House bar at What If this year.
+          </p>
+          <p>
+            To use, just add what you are brining to help stock the bar at YMH.
+          </p>
+          <p>
+            If you&apos;re bringing something that isn&apos;t already on the
+            list <b>for the bar</b>, use the form at the bottom of the page to
+            add it.
+          </p>
+          <p>
+            <b>
+              Please note that this is just for the bar, we&apos;re not
+              currently setup to use this for other shared items.
+            </b>
+          </p>
+        </div>
         <div className="space-y-6 mt-6">
           {categories.map((category) => (
             <div key={category.id} className="space-y-2">
