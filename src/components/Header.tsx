@@ -1,6 +1,8 @@
-'use client';
+"use client";
 
-import { useSession } from '@/context/SessionContext';
+import Image from "next/image";
+import YMHLogo from "../app/assets/YMH.jpg";
+import { useSession } from "@/context/SessionContext";
 
 export default function Header() {
   const { session, signOut } = useSession();
@@ -8,7 +10,18 @@ export default function Header() {
   return (
     <header className="bg-white shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-900">Your Mom&apos;s House</h1>
+        <Image
+          src={YMHLogo}
+          alt="YMH Logo"
+          width={200}
+          height={100}
+          priority
+          className="rounded-lg"
+        />
+        <h1 className="text-xl font-semibold text-gray-900">
+          What If 2025 Shared Bar
+        </h1>
+
         {session && (
           <button
             onClick={signOut}
