@@ -13,6 +13,7 @@ import BonusItemForm from "../../components/BonusItemForm";
 import Modal from "../../components/Modal";
 
 export default function ItemsPage() {
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [categories, setCategories] = useState<CategoryWithItems[]>([]);
   const [expandedItems, setExpandedItems] = useState<{
     [key: number]: boolean;
@@ -88,7 +89,8 @@ export default function ItemsPage() {
                 .map(
                   (ui): Commitment => ({
                     count: ui.count,
-                    userName: ui.profile.name,
+                    userName: ui.profile.name || "Unknown",
+                    userId: ui.user_id,
                   })
                 );
 
@@ -132,7 +134,48 @@ export default function ItemsPage() {
     }
   };
 
+  const handleDelete = async (itemId: number) => {
+    try {
+      // First delete the category-item relationship
+      const { error: relationError } = await supabase
+        .from('categories_items')
+        .delete()
+        .eq('item_id', itemId);
+
+      if (relationError) throw relationError;
+
+      // Then delete the users-items relationships
+      const { error: userItemError } = await supabase
+        .from('users_items')
+        .delete()
+        .eq('item_id', itemId);
+
+      if (userItemError) throw userItemError;
+
+      // Finally delete the item itself
+      const { error: itemError } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', itemId);
+
+      if (itemError) throw itemError;
+
+      // Refresh the items list
+      fetchItems();
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      setError(err instanceof Error ? err.message : 'Error deleting item');
+    }
+  };
+
   useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getUser();
     fetchItems();
   }, []);
 
@@ -283,14 +326,27 @@ export default function ItemsPage() {
                   {category.id === 3 ? (
                     // Simple display for category 3 items
                     <div className="p-4">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {item.name}
-                        </h3>
-                        {item.description && (
-                          <p className="ml-1 text-sm text-gray-500">
-                            {item.description}
-                          </p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="ml-1 text-sm text-gray-500">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                        {item.commitments.some(c => c.userId === currentUserId) && (
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-800 focus:outline-none"
+                          >
+                            <span className="sr-only">Delete item</span>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                          </button>
                         )}
                       </div>
                     </div>

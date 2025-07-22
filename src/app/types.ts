@@ -16,10 +16,7 @@ export type ItemWithCommitments = {
 	total_count: number;
 	max_count: number;
 	created_at: string;
-	commitments: {
-		count: number;
-		userName: string;
-	}[];
+	commitments: Commitment[];
 };
 
 export type CategoryWithItems = {
@@ -46,4 +43,5 @@ export type DbCategory = {
 export type Commitment = {
 	count: number;
 	userName: string;
+	userId: string;
 };
