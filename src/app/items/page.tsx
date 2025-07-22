@@ -9,6 +9,7 @@ import {
   DbUserItemResponse,
   DbCategory,
 } from "../types";
+import BonusItemForm from "../../components/BonusItemForm";
 
 export default function ItemsPage() {
   const [categories, setCategories] = useState<CategoryWithItems[]>([]);
@@ -379,6 +380,10 @@ export default function ItemsPage() {
               ))}
             </div>
           ))}
+        </div>
+
+        <div className="mt-12">
+          <BonusItemForm onItemAdded={fetchItems} />
         </div>
       </div>
     </div>
