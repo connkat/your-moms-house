@@ -275,11 +275,6 @@ export default function ItemsPage() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div className="space-y-2 flex-1">
               <p className="text-sm sm:text-base">
-                We&apos;re testing this out to see if it can simplify the
-                process of buying items for Your Mom&apos;s House bar at What If
-                this year.
-              </p>
-              <p className="text-sm sm:text-base">
                 To use, just add to the count of what you are bringing to help
                 stock the bar at YMH.
               </p>

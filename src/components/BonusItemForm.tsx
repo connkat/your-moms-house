@@ -45,7 +45,7 @@ export default function BonusItemForm({
       const { error: relationError } = await supabase
         .from("categories_items")
         .insert({
-          category_id: 3,
+          category_id: 10,
           item_id: itemData.id,
         });
 
