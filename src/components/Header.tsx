@@ -15,33 +15,51 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <a href="/dashboard">
-          <Image
-            src={YMHLogo}
-            alt="YMH Logo"
-            width={200}
-            height={100}
-            priority
-            className="rounded-lg"
-          />
-          <h1 className="text-xl font-semibold text-gray-900">
-            What If 2025 Shared Bar
-          </h1>
+            <Image
+              src={YMHLogo}
+              alt="YMH Logo"
+              width={200}
+              height={100}
+              priority
+              className="rounded-lg"
+            />
+            <h1 className="text-xl text-center font-semibold text-gray-900">
+              What If 2025 Bar
+            </h1>
           </a>
         </div>
-        
+
         {session && (
           <nav className="flex space-x-8">
             <Link
               href="/dashboard"
-              className={`text-sm font-medium ${pathname === '/dashboard' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`text-sm font-medium ${
+                pathname === "/dashboard"
+                  ? "text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               Dashboard
             </Link>
             <Link
               href="/items"
-              className={`text-sm font-medium ${pathname === '/items' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`text-sm font-medium ${
+                pathname === "/items"
+                  ? "text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              Item Sign Up
+              Shifts Sign Up
+            </Link>
+            <Link
+              href="/shifts"
+              className={`text-sm font-medium ${
+                pathname === "/shifts"
+                  ? "text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Bartending Shifts
             </Link>
           </nav>
         )}

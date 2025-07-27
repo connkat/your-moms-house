@@ -126,38 +126,50 @@ export default function DashboardPage() {
           <div className="space-y-2 flex-1">
             <p className="text-sm sm:text-base">
               We&apos;re testing this out to see if it can simplify the process
-              of buying items for Your Mom&apos;s House bar at What If this
-              year.
+              of organizing for Your Mom&apos;s House bar at What If this year.
             </p>
             <p className="text-sm sm:text-base">
-              To use, just add to the count of what you are bringing to help
-              stock the bar at YMH.
+              Navigate to{" "}
+              <Link href="/items" className="text-indigo-600">
+                Items
+              </Link>{" "}
+              to signup for items that we need the crew to bring this year.
             </p>
             <p className="text-sm sm:text-base">
-              If you&apos;re bringing something that isn&apos;t already on the
-              list <b>for the bar</b>, click the button{" "}
-              {window.innerWidth >= 640 ? "to the right" : "below"} to add it.
+              Go to{" "}
+              <Link href="/shifts" className="text-indigo-600">
+                Shifts
+              </Link>{" "}
+              to sign up for a bar shift.
             </p>
             <p className="text-sm sm:text-base">
               <b>
                 Please note that this is just for the bar, we&apos;re not
-                currently setup to use this for other shared items.
+                currently setup to use this for other shared items or shifts.
               </b>
             </p>
+          </div>
+          <div className="flex justify-end p-4">
+            <Link
+              href="/items"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm"
+            >
+              Browse All Items
+            </Link>
+            
+          </div>
+          <div className="flex justify-end p-4">
+            <Link
+              href="/shifts"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm"
+            >
+              Browse All Shifts
+            </Link>
           </div>
         </div>
       </div>
 
       <div className="min-h-screen bg-white">
-        <div className="flex justify-end p-4">
-          <Link
-            href="/items"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm"
-          >
-            Browse All Items
-          </Link>
-        </div>
-
         {Object.keys(userCommitments).length === 0 ? (
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">
