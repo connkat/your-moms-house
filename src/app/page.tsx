@@ -1,16 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/lib/supabase';
 import ClientOnly from '@/components/ClientOnly';
+import { useRouter } from 'next/navigation';
+import { useSession } from '@/context/SessionContext';
 
 export default function Home() {
-
+  const router = useRouter();
+  const { session } = useSession();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard');
+    }
+  }, [session, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +91,7 @@ export default function Home() {
                 providers={[]}
                 view="magic_link"
                 showLinks={false}
-                redirectTo={`${window.location.origin}/items`}
+                redirectTo={`${window.location.origin}/pages/dashboard`}
               />
             </ClientOnly>
           </div>

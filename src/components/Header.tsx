@@ -1,26 +1,48 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import YMHLogo from "../app/assets/YMH.jpg";
 import { useSession } from "@/context/SessionContext";
 
 export default function Header() {
   const { session, signOut } = useSession();
+  const pathname = usePathname();
 
   return (
     <header className="bg-white shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Image
-          src={YMHLogo}
-          alt="YMH Logo"
-          width={200}
-          height={100}
-          priority
-          className="rounded-lg"
-        />
-        <h1 className="text-xl font-semibold text-gray-900">
-          What If 2025 Shared Bar
-        </h1>
+        <div className="flex items-center space-x-4">
+          <Image
+            src={YMHLogo}
+            alt="YMH Logo"
+            width={200}
+            height={100}
+            priority
+            className="rounded-lg"
+          />
+          <h1 className="text-xl font-semibold text-gray-900">
+            What If 2025 Shared Bar
+          </h1>
+        </div>
+        
+        {session && (
+          <nav className="flex space-x-8">
+            <Link
+              href="/dashboard"
+              className={`text-sm font-medium ${pathname === '/dashboard' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/items"
+              className={`text-sm font-medium ${pathname === '/items' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Item Sign Up
+            </Link>
+          </nav>
+        )}
 
         {session && (
           <button

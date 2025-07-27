@@ -8,9 +8,9 @@ import {
   Commitment,
   DbUserItemResponse,
   DbCategory,
-} from "../types";
-import BonusItemForm from "../../components/BonusItemForm";
-import Modal from "../../components/Modal";
+} from "@/app/types";
+import BonusItemForm from "@/components/BonusItemForm";
+import Modal from "@/components/Modal";
 
 export default function ItemsPage() {
   const [currentUserId, setCurrentUserId] = useState<string>("");
