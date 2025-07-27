@@ -76,6 +76,7 @@ export type DbShift = {
 };
 
 export type DbShiftSignup = {
+	id: number;
 	user_id: string;
 	shift_id: number;
 	created_at: string;

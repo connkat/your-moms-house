@@ -78,7 +78,10 @@ export default function ShiftsPage() {
       // Insert signup
       const { error: signupError } = await supabase
         .from('users_shifts')
-        .insert({ user_id: userId, shift_id: shiftId });
+        .insert({
+          user_id: userId,
+          shift_id: shiftId
+        });
       if (signupError) throw signupError;
 
       // Update shift count
