@@ -452,14 +452,16 @@ export default function ItemsPage() {
                                 : "Update"}
                             </button>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-900 text-center">
-                              Your commitment:{" "}
-                              {item.commitments.find(
-                                (c) => c.userId === currentUserId
-                              )?.count || 0}
-                            </p>
-                          </div>
+                          {(item.commitments.find(c => c.userId === currentUserId)?.count || 0) > 0 && (
+                            <div>
+                              <p className="text-sm text-gray-900 text-center">
+                                Your commitment:{" "}
+                                {item.commitments.find(
+                                  (c) => c.userId === currentUserId
+                                )?.count}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         </div>
                       )}

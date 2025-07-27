@@ -98,8 +98,10 @@ export default function DashboardPage() {
       // Sort categories by order
       const sortedGrouped = Object.entries(grouped)
         .sort(([, commitments1], [, commitments2]) => {
-          const order1 = (commitments1 as Commitment[])[0]?.category_order || 999;
-          const order2 = (commitments2 as Commitment[])[0]?.category_order || 999;
+          const order1 =
+            (commitments1 as Commitment[])[0]?.category_order || 999;
+          const order2 =
+            (commitments2 as Commitment[])[0]?.category_order || 999;
           return order1 - order2;
         })
         .reduce<GroupedCommitments>((acc, [key, value]) => {
@@ -141,7 +143,9 @@ export default function DashboardPage() {
       <div className="border border-gray-200 p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="space-y-2 flex-1">
-            <h2 className="text-xl font-semibold text-gray-900">Instructions:</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Instructions:
+            </h2>
             <p className="text-sm sm:text-base">
               We&apos;re testing this out to see if it can simplify the process
               of organizing for Your Mom&apos;s House bar at What If this year.
@@ -188,6 +192,11 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <p className="text-gray-600 italic">
+                        Please don&apos;t forget to show up for your shift!
+                      </p>
+                    </div>
                     {userShifts.map((shift) => (
                       <div
                         key={shift.id}
@@ -206,9 +215,11 @@ export default function DashboardPage() {
                               - {format(new Date(shift.shift_end), "h:mm a")}
                             </p>
                             {shift.description && (
-                              <div 
+                              <div
                                 className="text-gray-600 mt-2"
-                                dangerouslySetInnerHTML={{ __html: shift.description }}
+                                dangerouslySetInnerHTML={{
+                                  __html: shift.description,
+                                }}
                               />
                             )}
                           </div>
@@ -220,8 +231,8 @@ export default function DashboardPage() {
               </div>
 
               {/* Items Section */}
-              <div>
-                <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col">
+                <div className="flex flex-row justify-between items-center mb-6">
                   <h1 className="text-2xl font-semibold text-gray-900">
                     Your Items
                   </h1>
@@ -232,6 +243,14 @@ export default function DashboardPage() {
                     Edit Items
                   </Link>
                 </div>
+                <div>
+                  <p className="text-gray-600 italic">
+                    Please drop off your items at the bar on the day of the
+                    event. The ice that you bring should also arrive on the same
+                    day as the rest of your items
+                  </p>
+                </div>
+
                 <div className="space-y-8">
                   {Object.entries(userCommitments).map(
                     ([category, commitments]) => (
