@@ -49,7 +49,7 @@ export default function Header() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Shifts Sign Up
+              Item Sign Up
             </Link>
             <Link
               href="/shifts"
@@ -59,7 +59,7 @@ export default function Header() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Bartending Shifts
+              Shift Sign Up
             </Link>
           </nav>
         )}

@@ -90,7 +90,64 @@ ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 -- Enable RLS on categories_items table
 ALTER TABLE categories_items ENABLE ROW LEVEL SECURITY;
 
+-- Create shifts table
+CREATE TABLE IF NOT EXISTS shifts (
+  id SERIAL PRIMARY KEY,
+  description text,
+  event_name text NOT NULL,
+  shift_start timestamp NOT NULL,
+  shift_end timestamp NOT NULL,
+  count integer DEFAULT 0,
+  max_count integer NOT NULL,
+  created_at timestamp with time zone DEFAULT timezone('pacific'::text, now()) NOT NULL,
+  CONSTRAINT valid_count_range CHECK (count <= max_count)
+);
 
+-- Create users_shifts join table
+CREATE TABLE IF NOT EXISTS users_shifts (
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  shift_id integer REFERENCES shifts(id) ON DELETE CASCADE,
+  created_at timestamp with time zone DEFAULT timezone('pacific'::text, now()) NOT NULL,
+  PRIMARY KEY (user_id, shift_id)
+);
+
+-- Enable RLS on shifts table
+ALTER TABLE shifts ENABLE ROW LEVEL SECURITY;
+
+-- Enable RLS on users_shifts table
+ALTER TABLE users_shifts ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for shifts table
+CREATE POLICY "Users can read all shifts"
+  ON shifts FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Anyone can create shifts"
+  ON shifts FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Anyone can update shifts"
+  ON shifts FOR UPDATE
+  TO authenticated
+  USING (true);
+
+-- Create policies for users_shifts table
+CREATE POLICY "Users can read all shift signups"
+  ON users_shifts FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Users can sign up for shifts"
+  ON users_shifts FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can remove their shift signups"
+  ON users_shifts FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
 
 -- Create users_items table for tracking user commitments
 CREATE TABLE IF NOT EXISTS users_items (

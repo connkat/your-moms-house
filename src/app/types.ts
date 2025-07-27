@@ -45,3 +45,39 @@ export type Commitment = {
 	userName: string;
 	userId: string;
 };
+
+export type Shift = {
+	id: number;
+	event_name: string;
+	description: string;
+	shift_start: string;
+	shift_end: string;
+	count: number;
+	max_count: number;
+	created_at: string;
+	signups: ShiftSignup[];
+};
+
+export type ShiftSignup = {
+	userName: string;
+	userId: string;
+	created_at: string;
+};
+
+export type DbShift = {
+	id: number;
+	event_name: string;
+	description: string;
+	shift_start: string;
+	shift_end: string;
+	count: number;
+	max_count: number;
+	created_at: string;
+};
+
+export type DbShiftSignup = {
+	user_id: string;
+	shift_id: number;
+	created_at: string;
+	profile: DbProfile;
+};
