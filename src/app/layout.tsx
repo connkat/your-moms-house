@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "@/context/SessionContext";
 import Header from "@/components/Header";
 import ClientOnly from "@/components/ClientOnly";
+import ProfileCheck from "@/components/ProfileCheck";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,11 @@ export default function RootLayout({
       >
         <SessionProvider>
           <ClientOnly>
-            <Header />
+            <ProfileCheck>
+              <Header />
+              {children}
+            </ProfileCheck>
           </ClientOnly>
-          {children}
         </SessionProvider>
       </body>
     </html>

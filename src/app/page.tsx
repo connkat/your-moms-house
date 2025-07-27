@@ -91,7 +91,7 @@ export default function Home() {
                 providers={[]}
                 view="magic_link"
                 showLinks={false}
-                redirectTo={`${window.location.origin}/pages/dashboard`}
+                redirectTo={`${window.location.origin}/dashboard`}
               />
             </ClientOnly>
           </div>
