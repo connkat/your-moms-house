@@ -114,7 +114,9 @@ export default function ItemsPage() {
       );
 
       // Sort categories by order
-      const sortedCategories = processedCategories.sort((a, b) => a.order - b.order);
+      const sortedCategories = processedCategories.sort(
+        (a, b) => a.order - b.order
+      );
       setCategories(sortedCategories);
 
       // Initialize newCounts with current commitment values
@@ -318,22 +320,32 @@ export default function ItemsPage() {
         </Modal>
         <div className="space-y-4 mt-6">
           {categories.map((category) => (
-            <div key={category.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+            <div
+              key={category.id}
+              className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200"
+            >
               <button
-                onClick={() => setExpandedItems(prev => ({
-                  ...prev,
-                  [category.id]: !prev[category.id]
-                }))}
+                onClick={() =>
+                  setExpandedItems((prev) => ({
+                    ...prev,
+                    [category.id]: !prev[category.id],
+                  }))
+                }
                 className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors duration-150 focus:outline-none"
               >
                 <div className="flex items-center space-x-3">
-                  <h2 className="text-xl font-semibold text-gray-900">{category.name}</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {category.name}
+                  </h2>
                   <span className="text-sm text-gray-500">
-                    {category.items.length} item{category.items.length !== 1 ? 's' : ''}
+                    {category.items.length} item
+                    {category.items.length !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <svg
-                  className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${expandedItems[category.id] ? 'rotate-180' : ''}`}
+                  className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${
+                    expandedItems[category.id] ? "rotate-180" : ""
+                  }`}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -356,7 +368,9 @@ export default function ItemsPage() {
                           <h3 className="text-base font-medium text-gray-900">
                             {item.name}
                           </h3>
-                          {item.commitments.some((c) => c.userId === currentUserId) && (
+                          {item.commitments.some(
+                            (c) => c.userId === currentUserId
+                          ) && (
                             <button
                               onClick={() => handleDelete(item.id)}
                               className="text-red-600 hover:text-red-800 focus:outline-none"
@@ -384,37 +398,38 @@ export default function ItemsPage() {
                                 {item.name}
                               </h3>
                               <p
-                                className={`text-sm ${item.max_count - item.total_count > 10
-                                  ? "text-red-500"
-                                  : item.max_count - item.total_count > 1
+                                className={`text-sm ${
+                                  item.max_count - item.total_count > 10
+                                    ? "text-red-500"
+                                    : item.max_count - item.total_count > 1
                                     ? "text-orange-400"
                                     : "text-green-500"
-                                  }`}
+                                }`}
                               >
                                 {item.max_count - item.total_count} needed
                               </p>
                             </div>
                             <div className="space-y-2">
                               {item.description && (
-                                <p className="text-sm text-gray-600 mb-3">{item.description}</p>
+                                <p className="text-sm text-gray-600 mb-3">
+                                  {item.description}
+                                </p>
                               )}
                               <div className="flex items-center gap-4">
                                 <p className="text-sm text-gray-900">
                                   Total: {item.total_count} / {item.max_count}
                                 </p>
-                                <p className="text-sm text-gray-900">
-                                  Your commitment: {item.commitments.find(c => c.userId === currentUserId)?.count || 0}
-                                </p>
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 w-[140px]">
+                          <div className="flex-column">
+                          <div className="flex items-center gap-2 w-[180px]">
                             <input
                               type="number"
                               name={`count-${item.id}`}
                               id={`count-${item.id}`}
                               min="0"
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900"
+                              className="block w-16 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-900"
                               value={newCounts[item.id] ?? 0}
                               onChange={(e) => {
                                 const value = Math.max(
@@ -430,11 +445,22 @@ export default function ItemsPage() {
                             <button
                               onClick={() => updateCount(item.id)}
                               disabled={updatingItems[item.id]}
-                              className="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              {updatingItems[item.id] ? "Updating..." : "Update"}
+                              {updatingItems[item.id]
+                                ? "Updating..."
+                                : "Update"}
                             </button>
                           </div>
+                          <div>
+                            <p className="text-sm text-gray-900 text-center">
+                              Your commitment:{" "}
+                              {item.commitments.find(
+                                (c) => c.userId === currentUserId
+                              )?.count || 0}
+                            </p>
+                          </div>
+                        </div>
                         </div>
                       )}
                     </div>
