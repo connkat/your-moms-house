@@ -206,9 +206,10 @@ export default function DashboardPage() {
                               - {format(new Date(shift.shift_end), "h:mm a")}
                             </p>
                             {shift.description && (
-                              <p className="text-gray-600 mt-2">
-                                {shift.description}
-                              </p>
+                              <div 
+                                className="text-gray-600 mt-2"
+                                dangerouslySetInnerHTML={{ __html: shift.description }}
+                              />
                             )}
                           </div>
                         </div>

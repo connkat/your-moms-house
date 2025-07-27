@@ -151,9 +151,10 @@ export default function ShiftsPage() {
                         {formattedStart} - {formattedEnd}
                       </p>
                       {shift.description && (
-                        <p className="text-gray-600 mt-1">
-                          {shift.description}
-                        </p>
+                        <div 
+                          className="text-gray-600 mt-2"
+                          dangerouslySetInnerHTML={{ __html: shift.description }}
+                        />
                       )}
                       <p className="text-gray-600 mt-1">
                         {shift.count} / {shift.max_count} spots filled
@@ -210,9 +211,13 @@ export default function ShiftsPage() {
                   {/* Description Column */}
                   <div className="px-4">
                     {shift.description && (
-                      <p className="text-gray-600">
-                        {shift.description}
-                      </p>
+                      <div className="space-y-2">
+                        <h4 className="text-base font-bold text-gray-900">Tasks:</h4>
+                        <div 
+                          className="text-gray-600"
+                          dangerouslySetInnerHTML={{ __html: shift.description }}
+                        />
+                      </div>
                     )}
                   </div>
 
