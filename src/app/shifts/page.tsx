@@ -11,6 +11,7 @@ export default function ShiftsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [expandedShifts, setExpandedShifts] = useState<{[key: number]: boolean}>({});
 
   const router = useRouter();
 
@@ -137,38 +138,67 @@ export default function ShiftsPage() {
           {shifts.map(shift => {
             const isSignedUp = shift.signups.some(signup => signup.userId === userId);
             const isFull = shift.count >= shift.max_count;
-            const formattedStart = format(new Date(shift.shift_start), 'EEEE, MMMM d, yyyy h:mm a');
+            const shiftDate = format(new Date(shift.shift_start), 'EEEE, MMMM d, yyyy');
+            const formattedStart = format(new Date(shift.shift_start), 'h:mm a');
             const formattedEnd = format(new Date(shift.shift_end), 'h:mm a');
+            const isExpanded = expandedShifts[shift.id] || false;
 
             return (
-              <div key={shift.id} className="border rounded-lg p-4 bg-gray-50">
+              <div key={shift.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 {/* Mobile View */}
                 <div className="md:hidden">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{shift.event_name}</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{shift.event_name}</h3>
+                        <p className="text-gray-600">{shiftDate}</p>
+                        <p className="text-gray-600">
+                          {formattedStart} - {formattedEnd}
+                        </p>
+                        {shift.description && (
+                          <button
+                            onClick={() => setExpandedShifts(prev => ({ ...prev, [shift.id]: !prev[shift.id] }))}
+                            className="mt-2 text-sm text-indigo-600 hover:text-indigo-500 flex items-center gap-1"
+                          >
+                            <span>{isExpanded ? 'Hide' : 'Show'} details</span>
+                            <svg
+                              className={`h-4 w-4 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                        {isExpanded && (
+                          <div className="mt-2 pl-2 border-l-2 border-indigo-200 space-y-4">
+                            {shift.description && (
+                              <div
+                                className="text-gray-600"
+                                dangerouslySetInnerHTML={{ __html: shift.description }}
+                              />
+                            )}
+                            {shift.signups.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-gray-500">Signed up:</p>
+                                <ul className="mt-1 text-sm text-gray-600 list-disc list-inside">
+                                  {shift.signups.map(signup => (
+                                    <li key={signup.userId}>{signup.userName}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       <p className="text-gray-600">
-                        {formattedStart} - {formattedEnd}
-                      </p>
-                      {shift.description && (
-                        <div 
-                          className="text-gray-600 mt-2"
-                          dangerouslySetInnerHTML={{ __html: shift.description }}
-                        />
-                      )}
-                      <p className="text-gray-600 mt-1">
                         {shift.count} / {shift.max_count} spots filled
                       </p>
-                      {shift.signups.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm text-gray-500">Signed up:</p>
-                          <ul className="text-sm text-gray-600">
-                            {shift.signups.map(signup => (
-                              <li key={signup.userId}>{signup.userName}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
                     </div>
                     <button
                       onClick={() => isSignedUp ? handleCancelSignup(shift.id) : handleSignup(shift.id)}
@@ -190,6 +220,7 @@ export default function ShiftsPage() {
                 <div className="hidden md:grid md:grid-cols-3 md:gap-4 md:items-start">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{shift.event_name}</h3>
+                    <p className="text-gray-600">{shiftDate}</p>
                     <p className="text-gray-600">
                       {formattedStart} - {formattedEnd}
                     </p>

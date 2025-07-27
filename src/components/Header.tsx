@@ -15,9 +15,9 @@ export default function Header() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const navLinks = [
-    { href: "/dashboard", label: "Dashboard", title: "Your Dashboard" },
-    { href: "/items", label: "Item Sign Up", title: "Item Sign Up" },
-    { href: "/shifts", label: "Shift Sign Up", title: "Shift Sign Up" },
+    { href: "/dashboard", label: "Dashboard", title: "Dashboard" },
+    { href: "/items", label: "Item Sign Up", title: "Items" },
+    { href: "/shifts", label: "Shift Sign Up", title: "Shifts" },
   ];
 
   const currentPage = navLinks.find(link => link.href === pathname);
