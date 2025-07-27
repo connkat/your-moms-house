@@ -66,8 +66,8 @@ export default function ItemsPage() {
       // Process the data
       const processedCategories = (categoriesData || []).map(
         (category: DbCategory): CategoryWithItems => {
-          const items = (category.items || []).map(
-            (item): ItemWithCommitments => {
+          const items = (category.items || [])
+            .map((item): ItemWithCommitments => {
               const validUserItems =
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ((userItemsData || []) as Record<string, any>[]).filter(
@@ -103,8 +103,8 @@ export default function ItemsPage() {
                 total_count: item.total_count,
                 max_count: item.max_count,
               };
-            }
-          );
+            })
+            .sort((a, b) => a.id - b.id); // Sort items by ID
 
           return {
             ...category,
