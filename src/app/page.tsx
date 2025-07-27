@@ -24,11 +24,12 @@ export default function Home() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simple password check - in a real app, this should be more secure
-    if (password === 'yourmom') {
+    if (password === process.env.NEXT_PUBLIC_SITE_PASSWORD) {
       setShowAuth(true);
       setError('');
     } else {
       setError('Incorrect password');
+      console.log(password, process.env.NEXT_PUBLIC_SITE_PASSWORD)
     }
   };
 

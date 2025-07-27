@@ -21,18 +21,21 @@ export default function Header() {
     { href: "/shifts", label: "Shift Sign Up", title: "Shifts" },
   ];
 
-  const currentPage = navLinks.find(link => link.href === pathname);
+  const currentPage = navLinks.find((link) => link.href === pathname);
 
   return (
     <header className="bg-white shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-shrink-0">
-            <a href="/dashboard" className="flex flex-col items-center sm:items-start">
+            <a
+              href="/dashboard"
+              className="flex flex-col items-center sm:items-start"
+            >
               <Image
                 src={YMHLogo}
                 alt="YMH Logo"
-                width={150}
+
                 height={75}
                 priority
                 className="rounded-lg"
@@ -71,7 +74,7 @@ export default function Header() {
                 <button
                   onClick={async () => {
                     await signOut();
-                    router.push('/');
+                    router.push("/");
                   }}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
