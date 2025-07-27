@@ -42,16 +42,21 @@ export default function ShiftsPage() {
       if (signupsError) throw signupsError;
 
       // Process and combine the data
-      const processedShifts: Shift[] = (shiftsData as DbShift[]).map(shift => ({
-        ...shift,
-        signups: (signupsData as DbShiftSignup[])
+      const processedShifts: Shift[] = (shiftsData as DbShift[]).map(shift => {
+        const shiftSignups = (signupsData as DbShiftSignup[])
           .filter(signup => signup.shift_id === shift.id)
           .map(signup => ({
             userId: signup.user_id,
             userName: signup.profile.name,
             created_at: signup.created_at
-          }))
-      }));
+          }));
+
+        return {
+          ...shift,
+          signups: shiftSignups,
+          count: shiftSignups.length
+        };
+      });
 
       setShifts(processedShifts);
     } catch (err) {
@@ -84,13 +89,6 @@ export default function ShiftsPage() {
         });
       if (signupError) throw signupError;
 
-      // Update shift count
-      const { error: updateError } = await supabase
-        .from('shifts')
-        .update({ count: shift.count + 1 })
-        .eq('id', shiftId);
-      if (updateError) throw updateError;
-
       await fetchShifts();
     } catch (err) {
       console.error('Error:', err);
@@ -113,13 +111,6 @@ export default function ShiftsPage() {
         .eq('user_id', userId)
         .eq('shift_id', shiftId);
       if (deleteError) throw deleteError;
-
-      // Update shift count
-      const { error: updateError } = await supabase
-        .from('shifts')
-        .update({ count: shift.count - 1 })
-        .eq('id', shiftId);
-      if (updateError) throw updateError;
 
       await fetchShifts();
     } catch (err) {
