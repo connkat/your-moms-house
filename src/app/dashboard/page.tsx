@@ -109,6 +109,19 @@ export default function DashboardPage() {
           return acc;
         }, {});
 
+      // Add ice requirement if user has any items
+      if (Object.keys(sortedGrouped).length > 0) {
+        sortedGrouped['Required Items'] = [
+          {
+            item_id: -1, // Using -1 as a special ID for ice
+            item_name: 'Bag of Ice',
+            count: 2,
+            category_name: 'Required Items',
+            category_id: -1,
+            category_order: -1 // This will make it appear first
+          }
+        ];
+      }
       setUserCommitments(sortedGrouped);
 
       // Fetch user's shifts
@@ -243,10 +256,10 @@ export default function DashboardPage() {
                     Edit Items
                   </Link>
                 </div>
-                {userShifts.length === 0 ? (
+                {Object.keys(userCommitments).length === 0 ? (
                   <div className="border border-gray-200 rounded-lg p-6 shadow-sm">
                     <p className="text-gray-700">
-                      You haven&apos;t signed up for any shifts yet.
+                      You haven&apos;t signed up for any items yet.
                     </p>
                   </div>
                 ) : (
