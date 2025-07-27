@@ -13,6 +13,7 @@ export default function DashboardPage() {
     count: number;
     category_name: string;
     category_id: number;
+    category_order: number;
   }
 
   interface GroupedCommitments {
@@ -43,7 +44,7 @@ export default function DashboardPage() {
           `
           item_id,
           count,
-          items:items!inner (name, categories_items:categories_items!inner(categories:categories!inner(id, name)))
+          items:items!inner (name, categories_items:categories_items!inner(categories:categories!inner(id, name, order)))
         `
         )
         .eq("user_id", user.id);
@@ -59,6 +60,7 @@ export default function DashboardPage() {
             categories: {
               id: number | null;
               name: string | null;
+              order: number;
             };
           }>;
         };
@@ -76,6 +78,8 @@ export default function DashboardPage() {
               "Uncategorized",
             category_id:
               item.items.categories_items?.[0]?.categories?.id || 999,
+            category_order:
+              item.items.categories_items?.[0]?.categories?.order || 999,
           })) || [];
 
       // Group commitments by category
@@ -91,12 +95,12 @@ export default function DashboardPage() {
         {} as GroupedCommitments
       );
 
-      // Sort categories by ID
+      // Sort categories by order
       const sortedGrouped = Object.entries(grouped)
         .sort(([, commitments1], [, commitments2]) => {
-          const id1 = (commitments1 as Commitment[])[0]?.category_id || 999;
-          const id2 = (commitments2 as Commitment[])[0]?.category_id || 999;
-          return id1 - id2;
+          const order1 = (commitments1 as Commitment[])[0]?.category_order || 999;
+          const order2 = (commitments2 as Commitment[])[0]?.category_order || 999;
+          return order1 - order2;
         })
         .reduce<GroupedCommitments>((acc, [key, value]) => {
           acc[key] = value as Commitment[];
@@ -137,6 +141,7 @@ export default function DashboardPage() {
       <div className="border border-gray-200 p-6 rounded-lg overflow-hidden bg-white shadow-sm text-gray-500">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="space-y-2 flex-1">
+            <h2 className="text-xl font-semibold text-gray-900">Instructions:</h2>
             <p className="text-sm sm:text-base">
               We&apos;re testing this out to see if it can simplify the process
               of organizing for Your Mom&apos;s House bar at What If this year.
@@ -154,12 +159,6 @@ export default function DashboardPage() {
                 Shifts
               </Link>{" "}
               to sign up for a bar shift.
-            </p>
-            <p className="text-sm sm:text-base">
-              <b>
-                Please note that this is just for the bar, we&apos;re not
-                currently setup to use this for other shared items or shifts.
-              </b>
             </p>
           </div>
         </div>

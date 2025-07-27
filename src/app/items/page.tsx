@@ -113,7 +113,9 @@ export default function ItemsPage() {
         }
       );
 
-      setCategories(processedCategories);
+      // Sort categories by order
+      const sortedCategories = processedCategories.sort((a, b) => a.order - b.order);
+      setCategories(sortedCategories);
 
       // Initialize newCounts with current commitment values
       const initialCounts: { [key: number]: number } = {};
@@ -327,15 +329,10 @@ export default function ItemsPage() {
                     // Simple display for category 3 items
                     <div className="p-3 sm:p-4">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4">
-                        <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row w-full">
                           <h3 className="text-base sm:text-lg font-medium text-gray-900">
                             {item.name}
                           </h3>
-                          {item.description && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              {item.description}
-                            </p>
-                          )}
                         </div>
                         {item.commitments.some(
                           (c) => c.userId === currentUserId
@@ -377,13 +374,8 @@ export default function ItemsPage() {
                         <div className="flex flex-col items-start w-full">
                           <div className="flex flex-col sm:flex-row sm:items-center w-full">
                             <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                              {item.name}:
+                              {item.name}
                             </h3>
-                            {item.description && (
-                              <p className="mt-1 sm:mt-0 sm:ml-2 text-sm text-gray-500">
-                                {item.description}
-                              </p>
-                            )}
                           </div>
                           <div className="flex items-baseline gap-4">
                             <p className="text-sm text-gray-500">
@@ -423,14 +415,18 @@ export default function ItemsPage() {
                       {expandedItems[item.id] && (
                         <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
                           <div className="space-y-4">
+                            {item.description && (
+                              <p className="text-sm text-gray-500">
+                                {item.description}
+                              </p>
+                            )}
                             <div>
                               <label
                                 htmlFor={`count-${item.id}`}
                                 className="block text-sm font-medium text-black"
                               >
                                 Your commitment:{" "}
-                                {item.commitments.find((c) => c.count > 0)
-                                  ?.count || 0}
+                                {item.commitments.find((c) => c.count > 0)?.count || 0}
                               </label>
                               <div className="mt-1 flex max-w-32 rounded-md shadow-sm text-black">
                                 <input
@@ -438,7 +434,7 @@ export default function ItemsPage() {
                                   name={`count-${item.id}`}
                                   id={`count-${item.id}`}
                                   min="0"
-                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                   value={newCounts[item.id] ?? 0}
                                   onChange={(e) => {
                                     const value = Math.max(

@@ -23,6 +23,7 @@ export type CategoryWithItems = {
 	id: number;
 	name: string;
 	created_at: string;
+	order: number;
 	items: ItemWithCommitments[];
 };
 
@@ -30,6 +31,7 @@ export type DbCategory = {
 	id: number;
 	name: string;
 	created_at: string;
+	order: number;
 	items: {
 		id: number;
 		name: string;
