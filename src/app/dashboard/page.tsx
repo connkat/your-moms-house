@@ -1,26 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 import Link from 'next/link';
 
 export default function DashboardPage() {
 
-  const [userCommitments, setUserCommitments] = useState<Array<{
+  interface Commitment {
     item_id: number;
     item_name: string;
     count: number;
     category_name: string;
-  }>>([]);
+  }
+
+  interface GroupedCommitments {
+    [category: string]: Commitment[];
+  }
+
+  const [userCommitments, setUserCommitments] = useState<GroupedCommitments>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchUserCommitments();
-  }, []);
-
-  const fetchUserCommitments = async () => {
+  const fetchUserCommitments = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -37,7 +39,7 @@ export default function DashboardPage() {
           count,
           items:items!inner (
             name,
-            categories:categories!categories_items!inner (name)
+            categories_items!inner (categories!inner(name))
           )
         `)
         .eq('user_id', user.id);
@@ -49,67 +51,108 @@ export default function DashboardPage() {
         count: number;
         items: {
           name: string | null;
-          categories: {
-            name: string | null;
-          };
+          categories_items: Array<{
+            categories: {
+              name: string | null;
+            };
+          }>;
         };
       }
 
-      const processedCommitments = (data as unknown as DbItem[] | null)?.map(item => ({
+      const commitments = (data as unknown as DbItem[] | null)?.map(item => ({
         item_id: item.item_id,
         item_name: item.items?.name || 'Unknown Item',
         count: item.count,
-        category_name: item.items.categories?.name || 'Uncategorized'
+        category_name: item.items.categories_items?.[0]?.categories?.name || 'Uncategorized'
       })) || [];
 
-      setUserCommitments(processedCommitments);
+      // Group commitments by category
+      const grouped = commitments.reduce((acc, commitment) => {
+        const category = commitment.category_name;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(commitment);
+        return acc;
+      }, {} as GroupedCommitments);
+
+      // Sort categories alphabetically
+      const sortedGrouped = Object.keys(grouped)
+        .sort()
+        .reduce((acc, key) => {
+          acc[key] = grouped[key];
+          return acc;
+        }, {} as GroupedCommitments);
+
+      setUserCommitments(sortedGrouped);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching commitments:', err);
-      setError('Failed to load commitments');
+      setError(err instanceof Error ? err.message : 'Failed to load commitments');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUserCommitments();
+  }, [fetchUserCommitments]);
 
   if (loading) return <div className="flex justify-center p-8">Loading...</div>;
   if (error) return <div className="text-red-500 p-8">{error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Your Commitments</h1>
+    <div className="min-h-screen bg-white">
+      <div className="flex justify-end p-4">
         <Link
           href="/items"
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm"
         >
-          View All Items
+          Browse All Items
         </Link>
       </div>
 
-      {userCommitments.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600">You haven&apos;t committed to bring any items yet.</p>
-          <Link
-            href="/items"
-            className="text-indigo-600 hover:text-indigo-800 mt-4 inline-block"
-          >
-            Browse available items
-          </Link>
+      {Object.keys(userCommitments).length === 0 ? (
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            <div className="border border-gray-200 rounded-lg p-6 shadow-sm">
+              <h1 className="text-2xl font-semibold mb-6 text-gray-900">Your Commitments</h1>
+              <p className="text-gray-700">You haven&apos;t committed to bring any items yet.</p>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {userCommitments.map((commitment) => (
-            <div
-              key={commitment.item_id}
-              className="bg-white p-6 rounded-lg shadow-md"
-            >
-              <div className="text-sm text-indigo-600 mb-2">{commitment.category_name}</div>
-              <h3 className="text-xl font-semibold mb-2">{commitment.item_name}</h3>
-              <p className="text-gray-600">
-                You committed to bring: <span className="font-bold">{commitment.count}</span>
-              </p>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            <h1 className="text-2xl font-semibold mb-6 text-gray-900">Your Commitments</h1>
+            <div className="space-y-8">
+              {Object.entries(userCommitments).map(([category, commitments]) => (
+                <div key={category} className="space-y-4">
+                  <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                    {category}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {commitments.map((commitment) => (
+                      <div
+                        key={commitment.item_id}
+                        className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors duration-200 shadow-sm hover:shadow"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {commitment.item_name}
+                            </h3>
+                          </div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {commitment.count}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>
