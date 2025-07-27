@@ -243,44 +243,54 @@ export default function DashboardPage() {
                     Edit Items
                   </Link>
                 </div>
-                <div>
-                  <p className="text-gray-600 italic">
-                    Please drop off your items at the bar on the day of the
-                    event. The ice that you bring should also arrive on the same
-                    day as the rest of your items
-                  </p>
-                </div>
+                {userShifts.length === 0 ? (
+                  <div className="border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-gray-700">
+                      You haven&apos;t signed up for any shifts yet.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div>
+                      <p className="text-gray-600 italic">
+                        Please drop off your items at the bar on the day of the
+                        event. The ice that you bring should also arrive on the
+                        same day as the rest of your items
+                      </p>
+                    </div>
 
-                <div className="space-y-8">
-                  {Object.entries(userCommitments).map(
-                    ([category, commitments]) => (
-                      <div key={category} className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                          {category}
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {commitments.map((commitment) => (
-                            <div
-                              key={commitment.item_id}
-                              className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors duration-200 shadow-sm hover:shadow"
-                            >
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <h3 className="text-lg font-medium text-gray-900">
-                                    {commitment.item_name}
-                                  </h3>
+                    <div className="space-y-8">
+                      {Object.entries(userCommitments).map(
+                        ([category, commitments]) => (
+                          <div key={category} className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                              {category}
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {commitments.map((commitment) => (
+                                <div
+                                  key={commitment.item_id}
+                                  className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors duration-200 shadow-sm hover:shadow"
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <h3 className="text-lg font-medium text-gray-900">
+                                        {commitment.item_name}
+                                      </h3>
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                      {commitment.count}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="text-2xl font-bold text-gray-900">
-                                  {commitment.count}
-                                </div>
-                              </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

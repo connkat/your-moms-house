@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import YMHLogo from "../app/assets/YMH.jpg";
 import { useSession } from "@/context/SessionContext";
 
 export default function Header() {
   const { session, signOut } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -68,7 +69,10 @@ export default function Header() {
                   </Link>
                 ))}
                 <button
-                  onClick={signOut}
+                  onClick={async () => {
+                    await signOut();
+                    router.push('/');
+                  }}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Sign Out
