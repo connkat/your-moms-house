@@ -137,12 +137,56 @@ export default function ShiftsPage() {
           {shifts.map(shift => {
             const isSignedUp = shift.signups.some(signup => signup.userId === userId);
             const isFull = shift.count >= shift.max_count;
-            const formattedStart = format(new Date(shift.shift_start), 'MMMM d, yyyy h:mm a');
+            const formattedStart = format(new Date(shift.shift_start), 'EEEE, MMMM d, yyyy h:mm a');
             const formattedEnd = format(new Date(shift.shift_end), 'h:mm a');
 
             return (
               <div key={shift.id} className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-start">
+                {/* Mobile View */}
+                <div className="md:hidden">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{shift.event_name}</h3>
+                      <p className="text-gray-600">
+                        {formattedStart} - {formattedEnd}
+                      </p>
+                      {shift.description && (
+                        <p className="text-gray-600 mt-1">
+                          {shift.description}
+                        </p>
+                      )}
+                      <p className="text-gray-600 mt-1">
+                        {shift.count} / {shift.max_count} spots filled
+                      </p>
+                      {shift.signups.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">Signed up:</p>
+                          <ul className="text-sm text-gray-600">
+                            {shift.signups.map(signup => (
+                              <li key={signup.userId}>{signup.userName}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => isSignedUp ? handleCancelSignup(shift.id) : handleSignup(shift.id)}
+                      disabled={!isSignedUp && isFull}
+                      className={`px-4 py-2 rounded ${
+                        isSignedUp
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : isFull
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
+                      {isSignedUp ? 'Cancel' : isFull ? 'Full' : 'Sign Up'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Desktop View */}
+                <div className="hidden md:grid md:grid-cols-3 md:gap-4 md:items-start">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{shift.event_name}</h3>
                     <p className="text-gray-600">
@@ -162,19 +206,32 @@ export default function ShiftsPage() {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => isSignedUp ? handleCancelSignup(shift.id) : handleSignup(shift.id)}
-                    disabled={!isSignedUp && isFull}
-                    className={`px-4 py-2 rounded ${
-                      isSignedUp
-                        ? 'bg-red-500 hover:bg-red-600 text-white'
-                        : isFull
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                    }`}
-                  >
-                    {isSignedUp ? 'Cancel' : isFull ? 'Full' : 'Sign Up'}
-                  </button>
+                  
+                  {/* Description Column */}
+                  <div className="px-4">
+                    {shift.description && (
+                      <p className="text-gray-600">
+                        {shift.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Button Column */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => isSignedUp ? handleCancelSignup(shift.id) : handleSignup(shift.id)}
+                      disabled={!isSignedUp && isFull}
+                      className={`px-4 py-2 rounded ${
+                        isSignedUp
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : isFull
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
+                      {isSignedUp ? 'Cancel' : isFull ? 'Full' : 'Sign Up'}
+                    </button>
+                  </div>
                 </div>
               </div>
             );
