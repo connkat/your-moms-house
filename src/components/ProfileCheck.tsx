@@ -22,7 +22,11 @@ export default function ProfileCheck({
   // Handle auth check
   useEffect(() => {
     if (!session && pathname !== '/' && !pathname.startsWith('/?')) {
+      // Dismiss any existing auth toasts
+      toast.dismiss('auth-toast');
+      // Show new toast with ID
       toast.error('Please sign in to continue', {
+        id: 'auth-toast',
         duration: 3000,
         position: 'bottom-right',
       });
