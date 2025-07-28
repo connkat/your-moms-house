@@ -115,7 +115,7 @@ export default function DashboardPage() {
           {
             item_id: -1, // Using -1 as a special ID for ice
             item_name: 'Bag of Ice',
-            count: 2,
+            count: 1,
             category_name: 'Required Items',
             category_id: -1,
             category_order: -1 // This will make it appear first
