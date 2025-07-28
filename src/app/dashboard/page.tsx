@@ -34,6 +34,7 @@ export default function DashboardPage() {
       } = await supabase.auth.getUser();
       if (!user) {
         setError("Not authenticated");
+        window.location.href = '/';
         return;
       }
 
