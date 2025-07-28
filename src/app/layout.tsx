@@ -5,6 +5,7 @@ import { SessionProvider } from "@/context/SessionContext";
 import Header from "@/components/Header";
 import ClientOnly from "@/components/ClientOnly";
 import ProfileCheck from "@/components/ProfileCheck";
+import { Toaster } from 'react-hot-toast';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
             <ProfileCheck>
               <Header />
               {children}
+              <Toaster position="bottom-right" />
             </ProfileCheck>
           </ClientOnly>
         </SessionProvider>

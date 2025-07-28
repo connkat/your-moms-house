@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 import type { DbShift, DbShiftSignup, Shift } from '../types';
 import { format } from 'date-fns';
 
@@ -13,21 +12,16 @@ export default function ShiftsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [expandedShifts, setExpandedShifts] = useState<{[key: number]: boolean}>({});
 
-  const router = useRouter();
-
   const fetchShifts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
-        router.push('/');
-        return;
+      // Get current user from session
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
       }
-      setUserId(user.id);
 
       // Fetch all shifts
       const { data: shiftsData, error: shiftsError } = await supabase
@@ -66,7 +60,7 @@ export default function ShiftsPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, router]);
+  }, []);
 
   const handleSignup = async (shiftId: number) => {
     try {

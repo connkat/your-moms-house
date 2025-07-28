@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { supabase } from '@/lib/supabase';
+import { usePathname, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function ProfileCheck({
   children,
@@ -10,11 +12,25 @@ export default function ProfileCheck({
   children: React.ReactNode;
 }) {
   const { session } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [showNameForm, setShowNameForm] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
+  // Handle auth check
+  useEffect(() => {
+    if (!session && pathname !== '/' && !pathname.startsWith('/?')) {
+      toast.error('Please sign in to continue', {
+        duration: 3000,
+        position: 'bottom-right',
+      });
+      router.replace('/');
+    }
+  }, [session, pathname, router]);
+
+  // Handle profile check
   useEffect(() => {
     async function checkProfile() {
       if (!session?.user) {
@@ -66,10 +82,6 @@ export default function ProfileCheck({
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!session) {
-    return children;
   }
 
   if (showNameForm) {

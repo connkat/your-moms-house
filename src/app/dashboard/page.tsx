@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import Link from "next/link";
 import type { Shift } from "../types";
+import { useSession } from '@/context/SessionContext';
 
 export default function DashboardPage() {
   interface Commitment {
@@ -27,16 +28,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { session } = useSession();
+
   const fetchUserData = useCallback(async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("Not authenticated");
-        window.location.href = '/';
-        return;
-      }
+      if (!session?.user) return;
+      const user = session.user;
 
       // Get user's items with their categories
       const { data, error: commitmentError } = await supabase
@@ -143,11 +140,13 @@ export default function DashboardPage() {
       );
       setLoading(false);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+    if (session?.user) {
+      fetchUserData();
+    }
+  }, [session, fetchUserData]);
 
   if (loading) return <div className="flex justify-center p-8">Loading...</div>;
   if (error) return <div className="text-red-500 p-8">{error}</div>;
